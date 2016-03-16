@@ -1,5 +1,6 @@
 var Heroku = require('heroku-client'),
     heroku = new Heroku({ token: process.env.HEROKU_API_KEY });
+var _ = require('underscore');
 
 module.exports = function pong(bot, repo_info, payload) {
   var comment_options
@@ -7,7 +8,7 @@ module.exports = function pong(bot, repo_info, payload) {
     , should_pong;
 
   should_pong = payload.comment.user.login.toLowerCase() !== bot.options.username &&
-                (matches = payload.comment.body.match(/^\/flag +((?:[+-]?[a-zA-Z0-9_-]+ *)+)/));
+                (matches = payload.comment.body.match(/^\/flags?(?: +((?:[+-]?[a-zA-Z0-9_-]+ *)+))?($|\r|\n)/));
 
   if (!should_pong) {
     return;
@@ -35,8 +36,11 @@ module.exports = function pong(bot, repo_info, payload) {
     return memo;
   }
   var flagString = matches[1];
-  var flagArray = flagString.split(/ +/)
-  var flags = flagArray.reduce(parseFlagStr, {});
+  var flags;
+  if (flagString && flagString.length) {
+    var flagArray = flagString.split(/ +/)
+    flags = flagArray.reduce(parseFlagStr, {});
+  }
   var appPrefix = {
     "timecounts/timecounts-frontend": "timecounts-fe-pr-",
   }[repo_info.owner + '/' + repo_info.name];
@@ -48,8 +52,7 @@ module.exports = function pong(bot, repo_info, payload) {
   }
   var appName = appPrefix + payload.issue.number;
   var app = heroku.apps(appName);
-  app.configVars().update(flags, bot.handleError(function () {
-    var body = 'Changed flags on ' + appName + ': ' + JSON.stringify(flags);
+  function send(body) {
     comment_options = _.extend({
       number: payload.issue.number
     , body: body
@@ -58,7 +61,19 @@ module.exports = function pong(bot, repo_info, payload) {
     bot.github.issues.createComment(comment_options, bot.handleError(function (data) {
       bot.trace('* [Flag] Answered flag on the issue #' + payload.issue.number +
                 ' on the repo ' + repo_info.owner + '/' + repo_info.name + ': ' +
-                JSON.stringify(flags));
+                body);
     }));
-  }));
+  }
+  if (flags) {
+    app.configVars().update(flags, bot.handleError(function () {
+      var body = 'Changed flags on ' + appName + ': \n```json\n' + JSON.stringify(flags, null, 2) + '\n```';
+      send(body);
+    }));
+  } else {
+    app.configVars().info(bot.handleError(function (vars) {
+      var flags = _.pick(vars, (v, k) => /^FLAG_/.test(k));
+      var body = appName + ' flags are: \n```json\n' + JSON.stringify(flags, null, 2) + '\n```';
+      send(body);
+    }));
+  }
 };
