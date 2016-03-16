@@ -4,27 +4,54 @@
   "version": "0.1.0",
   "author": "Pau Ramon <masylum@gmail.com>",
   "contributors": [
-    {"name": "Pau Ramon", "email": "masylum@gmail.com"},
-    {"name": "Ferran Basora", "email": "fcsonline@gmail.com"},
-    {"name": "Maxim Colls", "email": "collsmaxim@gmail.com"},
-    {"name": "Graham Ballantyne", "email": "hello@grahamballantyne.com"},
-    {"name": "Radek Benkel", "email": "radek@benkel.pl"}
+    {
+      "name": "Pau Ramon",
+      "email": "masylum@gmail.com"
+    },
+    {
+      "name": "Ferran Basora",
+      "email": "fcsonline@gmail.com"
+    },
+    {
+      "name": "Maxim Colls",
+      "email": "collsmaxim@gmail.com"
+    },
+    {
+      "name": "Graham Ballantyne",
+      "email": "hello@grahamballantyne.com"
+    },
+    {
+      "name": "Radek Benkel",
+      "email": "radek@benkel.pl"
+    }
   ],
-  "keywords": ["github", "bot", "git", "ci", "hubot"],
+  "keywords": [
+    "github",
+    "bot",
+    "git",
+    "ci",
+    "hubot"
+  ],
   "dependencies": {
-    "node-github": "0.0.3",
-    "commander": "1.1.1",
     "cjson": "0.2.1",
-    "underscore": "1.5.1",
-    "github": "0.1.8",
-    "crypto": "0.0.3",
+    "commander": "1.1.1",
     "cron": "1.0.1",
-    "request": "2.25.0"
+    "crypto": "0.0.3",
+    "github": "0.1.8",
+    "heroku-client": "^2.4.1",
+    "node-github": "0.0.3",
+    "request": "2.25.0",
+    "underscore": "1.5.1"
   },
   "devDependencies": {
     "mocha": "*",
     "sinon": "*"
   },
-  "repository" : {"type": "git" , "url": "http://github.com/botdylan/botdylan.git" },
-  "engines": { "node": ">= 0.8.0" }
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/botdylan/botdylan.git"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  }
 }
