@@ -1,0 +1,21 @@
+{ "username": "ENVVAR"
+, "password": "ENVVAR"
+, "secret": "ENVVAR"
+, "url": "https://tcbd.eu.ngrok.io"
+, "port": 5000
+, "repositories":
+  { "timecounts/timecounts-frontend":
+    { "crons": {}
+    , "hooks":
+      { "issue_comment": ["flag"]
+      , "push": ["cowboys"]
+      }
+    }
+  , "timecounts/timecounts-api":
+    { "crons": {}
+    , "hooks":
+      { "push": ["cowboys"]
+      }
+    }
+  }
+}
