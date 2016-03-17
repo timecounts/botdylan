@@ -1,7 +1,7 @@
 { "username": "ENVVAR"
 , "password": "ENVVAR"
 , "secret": "ENVVAR"
-, "url": "https://tcbd.eu.ngrok.io"
+, "url": "https://tcbd.eu.ngrok.io/"
 , "port": 5000
 , "repositories":
   { "timecounts/timecounts-frontend":
