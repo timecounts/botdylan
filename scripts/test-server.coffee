@@ -1,5 +1,3 @@
-Heroku = require('heroku-client')
-heroku = new Heroku({ token: process.env.HEROKU_API_KEY })
 _ = require('lodash')
 child_process = require 'child_process'
 async = require 'async'
@@ -21,7 +19,7 @@ output = (stdout, stderr, lines) ->
   return quote str, lines
 
 
-runner = (res) -> = (cmd, args, options = {}, cb) ->
+runner = (res) -> (cmd, args, options = {}, cb) ->
   if typeof options is 'function'
     cb = options
     options = {}
@@ -105,15 +103,18 @@ module.exports = (robot) ->
         res.reply "The latest has been deployed!\n#{storedOutput}"
         done()
       migrate: (done) ->
-        if !isApi
-          return done()
-        else
-          app = heroku.apps(appName)
-          res.reply ":warning: I don't support API migrations yet!"
-          done()
+        return done() if !isApi
+        run "heroku", ["run", "rake", "db:migrate"], options, storeOutput done
+      restart: (done) ->
+        return done() if !isApi
+        run "heroku", ["run", "ps:restart"], options, done
+      announceMigrateSuccess: (done) ->
+        return done() if !isApi
+        res.reply "The database has been migrated!\n#{storedOutput}"
+        done()
     , (err) ->
       deploying = false
       if err
         return res.reply "Sorry, couldn't do that: ```\n#{err.message}\n```"
-      return res.reply "Okay; deployed!"
+      return
     return
