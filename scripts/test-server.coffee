@@ -4,9 +4,9 @@ async = require 'async'
 
 UPDATE_TIMEOUT = 90000
 
-quote = (str, lines = 10) ->
+quote = (str, maxLines = 10) ->
   lines = str.split("\n")
-  lines = lines[-lines..]
+  lines = lines[-maxLines..]
   return """
     ```
     #{lines.join("\n")}
