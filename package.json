@@ -27,5 +27,11 @@
   },
   "engines": {
     "node": "0.10.x"
+  },
+  "coffeelintConfig": {
+    "max_line_length": {
+      "value": 100,
+      "limitComments": true
+    }
   }
 }

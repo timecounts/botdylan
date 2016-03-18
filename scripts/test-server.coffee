@@ -4,21 +4,24 @@ _ = require('lodash')
 child_process = require 'child_process'
 async = require 'async'
 
-quote = (str) ->
+UPDATE_TIMEOUT = 90000
+
+quote = (str, lines = 10) ->
   lines = str.split("\n")
-  lines = lines[-10..]
+  lines = lines[-lines..]
   return """
     ```
     #{lines.join("\n")}
     ```
     """
 
-output = (stdout, stderr) ->
+output = (stdout, stderr, lines) ->
   everything = Buffer.concat([stdout, stderr])
   str = everything.toString('utf8')
-  return quote str
+  return quote str, lines
 
-run = (cmd, args, options = {}, cb) ->
+
+runner = (res) -> = (cmd, args, options = {}, cb) ->
   if typeof options is 'function'
     cb = options
     options = {}
@@ -30,17 +33,24 @@ run = (cmd, args, options = {}, cb) ->
   cp = child_process.spawn cmd, args, options
   stdout = new Buffer(0)
   stderr = new Buffer(0)
+  updateUser = ->
+    res.emote "is still working...\n#{output(stdout, stderr, 3)}"
+  interval = setInterval updateUser, UPDATE_TIMEOUT
   cp.stdout.on 'data', (data) ->
     stdout = Buffer.concat([stdout, data])
   cp.stderr.on 'data', (data) ->
     stderr = Buffer.concat([stderr, data])
   cp.on 'close', (code) ->
+    clearInterval interval
     if code isnt 0
-      return cb new Error("'#{cmd} #{args.join(" ")}' failed with code #{code}\n#{output stdout, stderr}")
+      errorMessage = "'#{cmd} #{args.join(" ")}' failed with code #{code}\n#{output stdout, stderr}"
+      return cb new Error(errorMessage)
     cb(null, output(stdout, stderr))
 
 
 module.exports = (robot) ->
+
+  deploying = false
 
   robot.respond /deploy (test(?:-api)?)( -f| --force)?((?: [a-z][ a-z0-9_-]+)*)/i, (res) ->
     appName = "timecounts-#{res.match[1]}"
@@ -51,7 +61,13 @@ module.exports = (robot) ->
     if force and isApi
       return res.reply "I'm sorry Dave, I'm afraid I can't do that"
 
+    if deploying
+      return res.reply "I'm already deploying! Check back later"
+
+    deploying = true
     res.reply "I'll try and deploy '#{branches.join(", ")}' to #{appName}..."
+
+    run = runner(res)
 
     options =
       api: isApi
@@ -96,6 +112,7 @@ module.exports = (robot) ->
           res.reply ":warning: I don't support API migrations yet!"
           done()
     , (err) ->
+      deploying = false
       if err
         return res.reply "Sorry, couldn't do that: ```\n#{err.message}\n```"
       return res.reply "Okay; deployed!"
