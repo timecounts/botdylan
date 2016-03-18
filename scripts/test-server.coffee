@@ -1,0 +1,102 @@
+Heroku = require('heroku-client')
+heroku = new Heroku({ token: process.env.HEROKU_API_KEY })
+_ = require('lodash')
+child_process = require 'child_process'
+async = require 'async'
+
+quote = (str) ->
+  lines = str.split("\n")
+  lines = lines[-10..]
+  return """
+    ```
+    #{lines.join("\n")}
+    ```
+    """
+
+output = (stdout, stderr) ->
+  everything = Buffer.concat([stdout, stderr])
+  str = everything.toString('utf8')
+  return quote str
+
+run = (cmd, args, options = {}, cb) ->
+  if typeof options is 'function'
+    cb = options
+    options = {}
+  options.cwd ?=
+    if options.api
+      "#{__dirname}/../scratchpad/timecounts-api"
+    else
+      "#{__dirname}/../scratchpad/timecounts-frontend"
+  cp = child_process.spawn cmd, args, options
+  stdout = new Buffer(0)
+  stderr = new Buffer(0)
+  cp.stdout.on 'data', (data) ->
+    stdout = Buffer.concat([stdout, data])
+  cp.stderr.on 'data', (data) ->
+    stderr = Buffer.concat([stderr, data])
+  cp.on 'close', (code) ->
+    if code isnt 0
+      return cb new Error("'#{cmd} #{args.join(" ")}' failed with code #{code}\n#{output stdout, stderr}")
+    cb(null, output(stdout, stderr))
+
+
+module.exports = (robot) ->
+
+  robot.respond /deploy (test(?:-api)?)( -f| --force)?((?: [a-z][ a-z0-9_-]+)*)/i, (res) ->
+    appName = "timecounts-#{res.match[1]}"
+    force = !!res.match[2]
+    branches = (res.match[3] || "master").split(/[ ]+/)
+    isApi = /[-]api/.test(appName)
+
+    if force and isApi
+      return res.reply "I'm sorry Dave, I'm afraid I can't do that"
+
+    res.reply "I'll try and deploy '#{branches.join(", ")}' to #{appName}..."
+
+    options =
+      api: isApi
+
+    storedOutput = null
+
+    storeOutput = (cb) ->
+      (err, output) ->
+        storedOutput = output
+        cb(err, output)
+
+
+    async.series
+      goTest: (done) -> run "git", ["checkout", "-f", "test"], options, done
+      gitFetch: (done) -> run "git", ["fetch", "--all"], options, done
+      gitReset: (done) ->
+        if force
+          run "git", ["reset", "--hard", "origin/#{branches.shift()}"], options, done
+        else
+          run "git", ["reset", "--hard", "test/master"], options, done
+      mergeBranches: (done) ->
+        if branches.length is 0
+          return done()
+        else
+          run "git", ["merge", branches.map((b) -> "origin/#{b}")...], options, done
+      announceMergeSuccess: (done) ->
+        res.reply "The merge went okay; deploying..."
+        done()
+      pushToHeroku: (done) ->
+        if force
+          run "git", ["push", "--force", "test", "test:master"], options, storeOutput done
+        else
+          run "git", ["push", "test", "test:master"], options, storeOutput done
+      announceDeploySuccess: (done) ->
+        res.reply "The latest has been deployed!\n#{storedOutput}"
+        done()
+      migrate: (done) ->
+        if !isApi
+          return done()
+        else
+          app = heroku.apps(appName)
+          res.reply ":warning: I don't support API migrations yet!"
+          done()
+    , (err) ->
+      if err
+        return res.reply "Sorry, couldn't do that: ```\n#{err.message}\n```"
+      return res.reply "Okay; deployed!"
+    return

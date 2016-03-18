@@ -8,6 +8,7 @@
     "start": ". ./.env; bin/hubot -a slack"
   },
   "dependencies": {
+    "async": "1.5.2",
     "heroku-client": "^2.4.1",
     "hubot": "^2.18.0",
     "hubot-diagnostics": "0.0.1",
