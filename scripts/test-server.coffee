@@ -115,6 +115,6 @@ module.exports = (robot) ->
     , (err) ->
       deploying = false
       if err
-        return res.reply "Sorry, couldn't do that: ```\n#{err.message}\n```"
+        return res.reply "Sorry, couldn't do that: \n#{err.message}\n"
       return
     return
