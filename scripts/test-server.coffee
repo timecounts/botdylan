@@ -53,7 +53,7 @@ module.exports = (robot) ->
   robot.respond /deploy (test(?:-api)?)( -f| --force)?((?: [a-z][ a-z0-9_-]+)*)/i, (res) ->
     appName = "timecounts-#{res.match[1]}"
     force = !!res.match[2]
-    branches = (res.match[3] || "master").split(/[ ]+/)
+    branches = _.compact((res.match[3] || "master").split(/[ ]+/))
     isApi = /[-]api/.test(appName)
 
     if force and isApi
