@@ -13,8 +13,8 @@ cd visual/timecounts-frontend
 git fetch >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>&1 || (echo "Git reset failed" && exit 2)
 git clean -df >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
-grep blink-diff test/test_helper.coffee || git checkout master test/test_helper.coffee
-git checkout master install-api.sh run-api.sh
+grep blink-diff test/test_helper.coffee || git checkout origin/master test/test_helper.coffee
+git checkout origin/master install-api.sh run-api.sh
 rm -Rf build >>"$LOGFILE" 2>&1 || (echo "Delete build folder failed" && exit 4)
 npm install >>"$LOGFILE" 2>&1 || (echo "npm install failed" && exit 5)
 ./install-api.sh >>"$LOGFILE" 2>&1 || (echo "install-api failed" && exit 6)
@@ -26,7 +26,6 @@ if [ "$TEST_STATUS" -gt "0" ]; then
   echo '```'
   tail -n 30 $LOGFILE
   echo '```'
-  exit 1;
 fi
 cd ../..
 mkdir -p "archive/$SAFE_COMMIT/"
