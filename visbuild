@@ -7,11 +7,13 @@ LOGFILE="$2"
 SAFE_COMMIT=$(echo "$COMMIT" | tr -c '[a-zA-Z0-9]' '-')
 
 export BLINK_CAPTURE=1 # Capture screenshots
+export ALLOW_LOG_FAILS=1 # Capture screenshots
 
 cd visual/timecounts-frontend
 git fetch >>"$LOGFILE" 2>/dev/null || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>/dev/null || (echo "Git reset failed" && exit 2)
 git clean -f >>"$LOGFILE" 2>/dev/null || (echo "Git clean failed" && exit 3)
+grep blink-diff test/test_helper.coffee || git checkout master test/test_helper.coffee
 rm -Rf build >>"$LOGFILE" 2>/dev/null || (echo "Delete build folder failed" && exit 4)
 npm install >>"$LOGFILE" 2>/dev/null || (echo "npm install failed" && exit 5)
 ./install-api.sh >>"$LOGFILE" 2>/dev/null || (echo "install-api failed" && exit 6)
