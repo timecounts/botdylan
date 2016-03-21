@@ -43,6 +43,7 @@
     "heroku-client": "^2.4.1",
     "node-github": "0.0.3",
     "request": "2.25.0",
+    "s3": "4.4.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {

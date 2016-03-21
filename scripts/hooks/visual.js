@@ -3,9 +3,19 @@ var _ = require('underscore');
 var BlinkDiff = require('blink-diff');
 var fs = require('fs');
 var async = require('async');
+var s3 = require('s3');
+
+var s3Client = s3.createClient({
+  s3Options: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+  }
+})
 
 var heroku = new Heroku({ token: process.env.HEROKU_API_KEY });
 var ROOT = `${__dirname}/../..`;
+var baseS3Key = null;
+const BUCKET_NAME = 'timecounts-test';
 
 module.exports = function pong(bot, repo_info, payload) {
   var comment_options
@@ -84,18 +94,22 @@ function blinkDiff(details, fileName, done) {
   const oldDir = details.oldDir;
   const newDir = details.newDir;
   const diffDir = details.diffDir;
+  const imageOutputPath = `${diffDir}/${fileName}`;
   diff = new BlinkDiff({
     imageAPath: `${oldDir}/${fileName}`,
     imageBPath: `${newDir}/${fileName}`,
     thresholdType: BlinkDiff.THRESHOLD_PERCENT,
     threshold: 0.01,
-    imageOutputPath: `${diffDir}/${fileName}`,
+    imageOutputPath,
   });
   diff.run((err, result) => {
     const title = fileName.replace(/--/g, ": ").replace(/-+/g, " ");
     if (err) {
       console.error(err.stack);
-      details.fails[fileName] = `#### ${title}\n\n` + "An error occurred: \n\n```\n" + err.stack + "\n```\n";
+      details.fails[fileName] = {
+        differences: 0,
+        body: `#### ${title}\n\n` + "An error occurred: \n\n```\n" + err.stack + "\n```\n"
+      };
       return;
     }
     if (Array.isArray(result)) {
@@ -104,13 +118,40 @@ function blinkDiff(details, fileName, done) {
     console.log(`Diff[${fileName}]: ${result.differences}`);
     if (!diff.hasPassed(result.code)) {
       // Upload image!
-      details.fails[fileName] =
-        `#### ${title}\n\n` +
-        `> Image not implemented yet`;
+      const key = `${baseS3Key || 'testing'}/${fileName}`
+      const params = {
+        localFile: imageOutputPath,
+        s3Params: {
+          Bucket: BUCKET_NAME,
+          Key: key,
+          ACL: 'public-read',
+          StorageClass: 'REDUCED_REDUNDANCY',
+        }
+      }
+      const uploader = s3Client.uploadFile(params);
+      uploader.on('error', err => {
+        details.fails[fileName] = Object.assign({}, result, {
+          differences: 0,
+          body:
+            `#### ${title}\n\n` +
+            `> Image failed to upload`
+        });
+        return done();
+      });
+      uploader.on('end', () => {
+        const url = `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
+        details.fails[fileName] = Object.assign({}, result, {
+          body:
+            `#### ${title}\n\n` +
+            `Differences: ${result.differences}\n`+
+            `![](${url})`
+        });
+        return done();
+      })
     } else {
       details.passes++;
+      return done();
     }
-    return done();
   });
 }
 
@@ -148,10 +189,11 @@ function blinkCompare(baseCommit, headCommit, done) {
 
   async.eachLimit(persisted, 3, blinkDiff.bind(null, details), err => {
     var fails = Object.keys(details.fails).map(k => details.fails[k]);
+    fails.sort((a, b) => b.differences - a.differences);
     details.pass = fails.length === 0;
     if (!details.pass) {
       details.message = `${fails.length} fails occurred (${details.passes} passes)`;
-      details.fullMessage += fails.join("\n\n");
+      details.fullMessage += fails.map(f => f.body).join("\n\n");
     } else {
       details.message = `${details.passes} checks passed`;
     }
@@ -161,6 +203,7 @@ function blinkCompare(baseCommit, headCommit, done) {
 }
 
 function build(task, cb) {
+  baseS3Key = `visual-diff/${new Date().toISOString().replace(/[^a-z0-9.-]/g, "_")}`;
   var baseCommit = task[0];
   var headCommit = task[1];
   var callback = task[2];
