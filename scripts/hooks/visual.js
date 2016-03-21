@@ -1,4 +1,3 @@
-var Heroku = require('heroku-client');
 var _ = require('underscore');
 var BlinkDiff = require('blink-diff');
 var fs = require('fs');
@@ -10,9 +9,8 @@ var s3Client = s3.createClient({
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY,
   }
-})
+});
 
-var heroku = new Heroku({ token: process.env.HEROKU_API_KEY });
 var ROOT = `${__dirname}/../..`;
 var baseS3Key = null;
 const BUCKET_NAME = 'timecounts-test';
@@ -55,19 +53,7 @@ module.exports = function pong(bot, repo_info, payload) {
   var baseCommit = payload.issue.base.sha;
   var headCommit = payload.issue.head.sha;
 
-  function createStatus(commit, status, message) {
-    var params = {
-      state: status,
-      description: message,
-      context: 'visual-regression',
-    };
-    heroku.post(`/repos/${repo_info.owner}/${repo_info.name}/statuses/${commit}`, params, function(err, app) {
-      if (err) {
-        console.error(`ERROR OCCURRED SETTING STATUS ${status} on commit ${commit}: ${err.message}`);
-        console.error(err.stack);
-      }
-    });
-  }
+  const createStatus = globalCreateStatus.bind(null, bot.github, repo_info.owner, repo_info.name);
 
   // 1. Add status
   createStatus(headCommit, 'pending');
@@ -248,5 +234,24 @@ function queueBuild(baseCommit, headCommit, callback) {
   }
 }
 
+function globalCreateStatus(github, owner, name, commit, status, message) {
+  var params = {
+    user: owner,
+    repo: name,
+    sha: commit,
+
+    state: status,
+    description: message,
+    context: 'ci/visual',
+  };
+  github.statuses.create(params, function(err, app) {
+    if (err) {
+      console.error(`ERROR OCCURRED SETTING STATUS ${status} on commit ${commit}: ${err.message}`);
+      console.error(err.stack);
+    }
+  });
+}
+
 module.exports.blinkCompare = blinkCompare;
 module.exports.blinkDiff = blinkDiff;
+module.exports.globalCreateStatus = globalCreateStatus;
