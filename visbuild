@@ -12,7 +12,7 @@ export ALLOW_LOG_FAILS=1 # Capture screenshots
 cd visual/timecounts-frontend
 git fetch >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>&1 || (echo "Git reset failed" && exit 2)
-git clean -f >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
+git clean -df >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
 grep blink-diff test/test_helper.coffee || git checkout master test/test_helper.coffee
 git checkout master install-api.sh run-api.sh
 rm -Rf build >>"$LOGFILE" 2>&1 || (echo "Delete build folder failed" && exit 4)
