@@ -33,6 +33,7 @@
     "hubot"
   ],
   "dependencies": {
+    "blink-diff": "1.0.12",
     "cjson": "0.2.1",
     "commander": "1.1.1",
     "cron": "1.0.1",

@@ -3,6 +3,7 @@ var _ = require('underscore');
 var BlinkDiff = require('blink-diff');
 
 var heroku = new Heroku({ token: process.env.HEROKU_API_KEY });
+var ROOT = `${__dirname}/../..`;
 
 module.exports = function pong(bot, repo_info, payload) {
   var comment_options
@@ -78,7 +79,9 @@ module.exports = function pong(bot, repo_info, payload) {
 var queue = [];
 
 function blinkDiff(details, fileName, done) {
-  const {oldDir, newDir, diffDir} = details;
+  const oldDir = details.oldDir;
+  const newDir = details.newDir;
+  const diffDir = details.diffDir;
   diff = new BlinkDiff({
     imageAPath: `${oldDir}/${fileName}`,
     imageBPath: `${newDir}/${fileName}`,
@@ -104,9 +107,9 @@ function blinkDiff(details, fileName, done) {
 
 function blinkCompare(baseCommit, headCommit, done) {
   const isScreenshot = filename => /^[^.].*\.png$/.test(filename);
-  var oldDir = `${__dirname}/../archives/${baseCommit}`;
-  var newDir = `${__dirname}/../archives/${headCommit}`;
-  var diffDir = `${__dirname}/../diff/${baseCommit}-${headCommit}`;
+  var oldDir = `${ROOT}/archives/${baseCommit}`;
+  var newDir = `${ROOT}/archives/${headCommit}`;
+  var diffDir = `${ROOT}/diff/${baseCommit}-${headCommit}`;
 
   var oldFiles = fs.readDirSync(oldDir).filter(isScreenshot);
   var newFiles = fs.readDirSync(newDir).filter(isScreenshot);
@@ -156,7 +159,7 @@ function build(task, cb) {
     cb();
     callback(err, details);
   }
-  var cp = child_process.spawn(`${__dirname}/../visdiff`, [baseCommit, headCommit]);
+  var cp = child_process.spawn(`${ROOT}/visdiff`, [baseCommit, headCommit]);
   var stdout = new Buffer(0);
   var stderr = new Buffer(0);
   cp.stdout.on('data', d => stdout = Buffer.concat([stdout, d]));
@@ -193,5 +196,5 @@ function queueBuild(baseCommit, headCommit, callback) {
   }
 }
 
-exports.blinkCompare = blinkCompare;
-exports.blinkDiff = blinkDiff;
+module.exports.blinkCompare = blinkCompare;
+module.exports.blinkDiff = blinkDiff;
