@@ -92,9 +92,10 @@ function blinkDiff(details, fileName, done) {
     imageOutputPath: `${diffDir}/${fileName}`,
   });
   diff.run((err, result) => {
+    const title = fileName.replace(/--/g, ": ").replace(/-+/g, " ");
     if (err) {
-      console.dir(err);
-      details.fails[fileName] = "An error occurred: \n\n```\n" + err.stack + "\n```\n";
+      console.error(err.stack);
+      details.fails[fileName] = `#### ${title}\n\n` + "An error occurred: \n\n```\n" + err.stack + "\n```\n";
       return;
     }
     if (Array.isArray(result)) {
@@ -104,7 +105,7 @@ function blinkDiff(details, fileName, done) {
     if (!diff.hasPassed(result.code)) {
       // Upload image!
       details.fails[fileName] =
-        `Sadly, differences were spotted in ${fileName}:\n\n` +
+        `#### ${title}\n\n` +
         `> Image not implemented yet`;
     } else {
       details.passes++;
@@ -146,7 +147,7 @@ function blinkCompare(baseCommit, headCommit, done) {
 
 
   async.eachLimit(persisted, 3, blinkDiff.bind(null, details), err => {
-    var fails = Object.keys(details.fails).map(k => `#### ${k}\n\n${details.fails[k]}\n`);
+    var fails = Object.keys(details.fails).map(k => details.fails[k]);
     details.pass = fails.length === 0;
     if (!details.pass) {
       details.message = `${fails.length} fails occurred (${details.passes} passes)`;
