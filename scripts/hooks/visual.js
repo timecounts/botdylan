@@ -1,6 +1,8 @@
 var Heroku = require('heroku-client');
 var _ = require('underscore');
 var BlinkDiff = require('blink-diff');
+var fs = require('fs');
+var async = require('async');
 
 var heroku = new Heroku({ token: process.env.HEROKU_API_KEY });
 var ROOT = `${__dirname}/../..`;
@@ -90,9 +92,15 @@ function blinkDiff(details, fileName, done) {
     imageOutputPath: `${diffDir}/${fileName}`,
   });
   diff.run((err, result) => {
+    if (err) {
+      console.dir(err);
+      details.fails[fileName] = "An error occurred: \n\n```\n" + err.stack + "\n```\n";
+      return;
+    }
     if (Array.isArray(result)) {
       result = result[0];
     }
+    console.log(`Diff[${fileName}]: ${result.differences}`);
     if (!diff.hasPassed(result.code)) {
       // Upload image!
       details.fails[fileName] =
@@ -107,12 +115,12 @@ function blinkDiff(details, fileName, done) {
 
 function blinkCompare(baseCommit, headCommit, done) {
   const isScreenshot = filename => /^[^.].*\.png$/.test(filename);
-  var oldDir = `${ROOT}/archives/${baseCommit}`;
-  var newDir = `${ROOT}/archives/${headCommit}`;
+  var oldDir = `${ROOT}/archive/${baseCommit}`;
+  var newDir = `${ROOT}/archive/${headCommit}`;
   var diffDir = `${ROOT}/diff/${baseCommit}-${headCommit}`;
 
-  var oldFiles = fs.readDirSync(oldDir).filter(isScreenshot);
-  var newFiles = fs.readDirSync(newDir).filter(isScreenshot);
+  var oldFiles = fs.readdirSync(oldDir).filter(isScreenshot);
+  var newFiles = fs.readdirSync(newDir).filter(isScreenshot);
 
   var added = newFiles.filter(f => oldFiles.indexOf(f) < 0);
   var removed = oldFiles.filter(f => newFiles.indexOf(f) < 0);
@@ -132,12 +140,12 @@ function blinkCompare(baseCommit, headCommit, done) {
   details.fullMessage += `#### Added: \n\n- ${added.join("\n- ") || "None"}\n\n`;
   details.fullMessage += `#### Removed: \n\n- ${removed.join("\n- ") || "None"}\n\n`;
   try {
-    fs.mkdir(diffDir);
+    fs.mkdirSync(diffDir);
   } catch(e) {
   }
 
 
-  async.each(persisted, blinkDiff.bind(details), err => {
+  async.eachLimit(persisted, 3, blinkDiff.bind(null, details), err => {
     var fails = Object.keys(details.fails).map(k => `#### ${k}\n\n${details.fails[k]}\n`);
     details.pass = fails.length === 0;
     if (!details.pass) {
