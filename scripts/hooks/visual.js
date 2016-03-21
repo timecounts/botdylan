@@ -56,7 +56,7 @@ module.exports = function pong(bot, repo_info, payload) {
   const createStatus = globalCreateStatus.bind(null, bot.github, repo_info.owner, repo_info.name);
 
   // 1. Add status
-  createStatus(headCommit, 'pending');
+  createStatus(headCommit, 'pending', 'Visual regression build pending...');
   // 2. Run build (queue?)
   // 3. Update status
 
@@ -68,7 +68,7 @@ module.exports = function pong(bot, repo_info, payload) {
       createStatus(headCommit, 'failure', details.shortMessage);
       send(details.fullMessage);
     } else {
-      createStatus(headCommit, 'success');
+      createStatus(headCommit, 'success', details.shortMessage);
     }
   });
 
@@ -178,10 +178,10 @@ function blinkCompare(baseCommit, headCommit, done) {
     fails.sort((a, b) => b.differences - a.differences);
     details.pass = fails.length === 0;
     if (!details.pass) {
-      details.message = `${fails.length} fails occurred (${details.passes} passes)`;
+      details.shortMessage = `${fails.length} fails occurred (${details.passes} passes)`;
       details.fullMessage += fails.map(f => f.body).join("\n\n");
     } else {
-      details.message = `${details.passes} checks passed`;
+      details.shortMessage = `${details.passes} checks passed`;
     }
     return done(err, details);
   });
