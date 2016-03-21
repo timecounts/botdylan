@@ -14,10 +14,12 @@ git fetch >>"$LOGFILE" 2>/dev/null || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>/dev/null || (echo "Git reset failed" && exit 2)
 git clean -f >>"$LOGFILE" 2>/dev/null || (echo "Git clean failed" && exit 3)
 grep blink-diff test/test_helper.coffee || git checkout master test/test_helper.coffee
+git checkout master install-api.sh run-api.sh
 rm -Rf build >>"$LOGFILE" 2>/dev/null || (echo "Delete build folder failed" && exit 4)
 npm install >>"$LOGFILE" 2>/dev/null || (echo "npm install failed" && exit 5)
 ./install-api.sh >>"$LOGFILE" 2>/dev/null || (echo "install-api failed" && exit 6)
 TEST_STATUS=0
+mkdir -p screenshots
 ./test.sh >>"$LOGFILE" 2>/dev/null || TEST_STATUS=$?
 if [ "$TEST_STATUS" -gt "0" ]; then
   echo "Test failed for $COMMIT";
