@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+cd "$(dirname $0)"
+BASE_COMMIT=$1
+HEAD_COMMIT=$2
+LOGFILE="$(pwd)/logs/$(echo "${BASE_COMMIT}-${HEAD_COMMIT}" | tr -c "[a-zA-Z0-9]" "-").txt"
+if [ ! -d "archive/${BASE_COMMIT}" ]; then
+  ./visbuild $BASE_COMMIT $LOGFILE
+fi
+if [ ! -d "archive/${BASE_COMMIT}" ]; then
+  ./visbuild $HEAD_COMMIT $LOGFILE
+fi
