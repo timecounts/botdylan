@@ -4,7 +4,7 @@ set -e
 COMMIT="$1"
 LOGFILE="$2"
 
-SAFE_COMMIT=$(echo "$COMMIT" | tr -c '[a-zA-Z0-9]' '-')
+SAFE_COMMIT=$(echo -n "$COMMIT" | tr -c '[a-zA-Z0-9]' '-')
 
 export BLINK_CAPTURE=1 # Capture screenshots
 export ALLOW_LOG_FAILS=1 # Capture screenshots
