@@ -122,7 +122,7 @@ function blinkCompare(baseCommit, headCommit, done) {
     added,
     removed,
     persisted,
-    fails: 0,
+    fails: {},
     passes: 0,
     fullMessage: "",
   };
