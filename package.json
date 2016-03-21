@@ -37,6 +37,7 @@
     "commander": "1.1.1",
     "cron": "1.0.1",
     "crypto": "0.0.3",
+    "eslint": "2.4.0",
     "github": "0.1.8",
     "heroku-client": "^2.4.1",
     "node-github": "0.0.3",
