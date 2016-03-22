@@ -160,20 +160,28 @@ function blinkDiff(details, fileName, done) {
   });
 }
 
-function blinkCompare(baseCommit, headCommit, done) {
+function blinkCompare(details, done) {
+  const baseCommit = details.baseCommit;
+  const headCommit = details.headCommit;
   const isScreenshot = filename => /^[^.].*\.png$/.test(filename);
   var oldDir = `${ROOT}/archive/${baseCommit}`;
   var newDir = `${ROOT}/archive/${headCommit}`;
   var diffDir = `${ROOT}/diff/${baseCommit}-${headCommit}`;
 
-  var oldFiles = fs.readdirSync(oldDir).filter(isScreenshot);
-  var newFiles = fs.readdirSync(newDir).filter(isScreenshot);
+  var oldFiles, newFiles;
+  try {
+    oldFiles = fs.readdirSync(oldDir).filter(isScreenshot);
+    newFiles = fs.readdirSync(newDir).filter(isScreenshot);
+  } catch (e) {
+    const err = new Error("Build failed, couldn't find screenshots")
+    return done(err, details);
+  }
 
   var added = newFiles.filter(f => oldFiles.indexOf(f) < 0);
   var removed = oldFiles.filter(f => newFiles.indexOf(f) < 0);
   var persisted = newFiles.filter(f => added.indexOf(f) < 0 && removed.indexOf(f) < 0);
 
-  var details = {
+  Object.assign(details, {
     oldDir,
     newDir,
     diffDir,
@@ -183,7 +191,7 @@ function blinkCompare(baseCommit, headCommit, done) {
     fails: {},
     passes: 0,
     fullMessage: "",
-  };
+  });
   details.fullMessage += `#### Added: \n\n- ${added.join("\n- ") || "None"}\n\n`;
   details.fullMessage += `#### Removed: \n\n- ${removed.join("\n- ") || "None"}\n\n`;
   try {
@@ -221,6 +229,12 @@ function build(bot, task, cb) {
   bot.trace('* [Visual] Spawned visdiff');
   var stdout = new Buffer(0);
   var stderr = new Buffer(0);
+  var details = {
+    stdout,
+    stderr,
+    baseCommit,
+    headCommit,
+  };
   cp.stdout.on('data', d => stdout = Buffer.concat([stdout, d]));
   cp.stderr.on('data', d => stderr = Buffer.concat([stderr, d]));
   cp.on('exit', function(code, signal) {
@@ -235,7 +249,7 @@ function build(bot, task, cb) {
       return done(err);
     }
     // Do the blink comparison
-    blinkCompare(baseCommit, headCommit, done);
+    blinkCompare(details, done);
 
   });
 }
