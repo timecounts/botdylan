@@ -10,6 +10,8 @@ export BLINK_CAPTURE=1 # Capture screenshots
 export ALLOW_LOG_FAILS=1 # Capture screenshots
 
 cd visual/timecounts-frontend
+pkill -f 'unicorn master' || true
+pkill -f 'rake jobs:work' || true
 git fetch >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>&1 || (echo "Git reset failed" && exit 2)
 git clean -df >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
