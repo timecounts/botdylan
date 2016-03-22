@@ -7,6 +7,6 @@ LOGFILE="$(pwd)/logs/$(echo -n "${BASE_COMMIT}-${HEAD_COMMIT}" | tr -c "[a-zA-Z0
 if [ ! -d "archive/${BASE_COMMIT}" ]; then
   ./visbuild $BASE_COMMIT $LOGFILE
 fi
-if [ ! -d "archive/${BASE_COMMIT}" ]; then
+if [ ! -d "archive/${HEAD_COMMIT}" ]; then
   ./visbuild $HEAD_COMMIT $LOGFILE
 fi
