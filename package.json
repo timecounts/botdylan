@@ -41,6 +41,7 @@
     "eslint": "2.4.0",
     "github": "0.1.8",
     "heroku-client": "^2.4.1",
+    "limiter": "1.1.0",
     "node-github": "0.0.3",
     "request": "2.25.0",
     "s3": "4.4.0",

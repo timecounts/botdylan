@@ -4,7 +4,10 @@ var fs = require('fs');
 var async = require('async');
 var s3 = require('s3');
 var child_process = require('child_process');
+const RateLimiter = require('limiter').RateLimiter;
 
+//const sendLimiter = new RateLimiter(3, 'minute'); // three per minute
+const sendLimiter = new RateLimiter(1, 5000); // 1 every 5 seconds
 var s3Client = s3.createClient({
   s3Options: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -47,7 +50,7 @@ module.exports = function pong(bot, repo_info, payload) {
 
 function runVisual(bot, repo_info, payload, err, pull_request) {
 
-  function send(body) {
+  function realSend(body) {
     var options = {user: repo_info.owner, repo: repo_info.name}
     comment_options = _.extend({
       number: payload.issue.number
@@ -59,6 +62,12 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
                 ' on the repo ' + repo_info.owner + '/' + repo_info.name + ': ' +
                 body);
     }));
+  }
+
+  function send(body) {
+    sendLimiter.removeTokens(1, function(err, remainingRequests) {
+      realSend(body);
+    });
   }
 
   if (err) {
