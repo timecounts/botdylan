@@ -18,7 +18,6 @@ const BUCKET_NAME = 'timecounts-test';
 
 module.exports = function pong(bot, repo_info, payload) {
   var comment_options
-    , options = {user: repo_info.owner, repo: repo_info.name}
     , should_pong;
 
   should_pong = payload.comment.user.login.toLowerCase() !== bot.options.username &&
@@ -49,6 +48,7 @@ module.exports = function pong(bot, repo_info, payload) {
 function runVisual(bot, repo_info, payload, err, pull_request) {
 
   function send(body) {
+    var options = {user: repo_info.owner, repo: repo_info.name}
     comment_options = _.extend({
       number: payload.issue.number
     , body: body
