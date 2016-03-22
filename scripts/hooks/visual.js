@@ -54,7 +54,7 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
     }, options);
 
     bot.github.issues.createComment(comment_options, bot.handleError(function (data) {
-      bot.trace('* [Flag] Answered flag on the issue #' + payload.issue.number +
+      bot.trace('* [Visual] Answered visual on the issue #' + payload.issue.number +
                 ' on the repo ' + repo_info.owner + '/' + repo_info.name + ': ' +
                 body);
     }));
@@ -71,18 +71,22 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
 
   // 1. Add status
   createStatus(headCommit, 'pending', 'Visual regression build pending...');
+  bot.trace('* [Visual] Set pending on issue #' + payload.issue.number);
   // 2. Run build (queue?)
   // 3. Update status
 
-  queueBuild(baseCommit, headCommit, function(err, details) {
+  queueBuild(bot, baseCommit, headCommit, function(err, details) {
     if (err) {
       createStatus(headCommit, 'error', err.message);
+      bot.trace('* [Visual] Set error on issue #' + payload.issue.number);
       send("Error occurred\n```\n" + err.stack + "\n```\n")
     } else if (!details.pass) {
       createStatus(headCommit, 'failure', details.shortMessage);
+      bot.trace('* [Visual] Set failure on issue #' + payload.issue.number);
       send(details.fullMessage);
     } else {
       createStatus(headCommit, 'success', details.shortMessage);
+      bot.trace('* [Visual] Set success on issue #' + payload.issue.number);
     }
   });
 
@@ -232,20 +236,24 @@ function build(task, cb) {
   });
 }
 
-function runQueue() {
-  if (queue.length > 1) {
+function runQueue(bot) {
+  if (queue.length > 0) {
     build(queue[0], function() {
+      bot.trace('* [Visual] Task complete, running next task');
       queue.unshift();
-      runQueue();
+      runQueue(bot);
     });
   }
 }
 
-function queueBuild(baseCommit, headCommit, callback) {
+function queueBuild(bot, baseCommit, headCommit, callback) {
   queue.push([baseCommit, headCommit, callback]);
   if (queue.length === 1) {
-    runQueue();
-  }
+    bot.trace('* [Visual] Running queue immediately');
+    runQueue(bot);
+  } else {
+    bot.trace('* [Visual] Task added to queue');
+   }
 }
 
 function globalCreateStatus(github, owner, name, commit, status, message) {
