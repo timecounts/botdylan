@@ -21,7 +21,7 @@ module.exports = function pong(bot, repo_info, payload) {
     , should_pong;
 
   should_pong = payload.comment.user.login.toLowerCase() !== bot.options.username &&
-                payload.issue.changed_files &&
+                payload.issue.pull_request &&
                 (matches = payload.comment.body.match(/^\/visual(\s|$)/));
 
   if (!should_pong) {
@@ -31,12 +31,22 @@ module.exports = function pong(bot, repo_info, payload) {
     "timecounts/timecounts-frontend": "timecounts-fe-pr-",
   }[repo_info.owner + '/' + repo_info.name];
   if (!appPrefix) {
-    bot.trace('* [Flag] Flag command on the issue #' + payload.issue.number +
-              ' on the repo ' + repo_info.owner + '/' + repo_info.name) +
-              ' was invalid - unsupported repo!';
+    bot.trace('* [Visual] Visual command on the issue #' + payload.issue.number +
+              ' on the repo ' + repo_info.owner + '/' + repo_info.name +
+              ' was invalid - unsupported repo!');
     return;
   }
-  var appName = appPrefix + payload.issue.number;
+
+  const prDetails = {
+    user: repo_info.owner,
+    repo: repo_info.name,
+    number: payload.issue.number,
+  };
+  bot.github.pullRequests.get(prDetails, runVisual.bind(null, bot, repo_info, payload));
+}
+
+function runVisual(bot, repo_info, payload, err, pull_request) {
+
   function send(body) {
     comment_options = _.extend({
       number: payload.issue.number
@@ -50,8 +60,12 @@ module.exports = function pong(bot, repo_info, payload) {
     }));
   }
 
-  var baseCommit = payload.issue.base.sha;
-  var headCommit = payload.issue.head.sha;
+  if (err) {
+    return send("Could not load pull request info: \n```\n" + err.message + "\n```")
+  }
+
+  var baseCommit = pull_request.base.sha;
+  var headCommit = pull_request.head.sha;
 
   const createStatus = globalCreateStatus.bind(null, bot.github, repo_info.owner, repo_info.name);
 

@@ -7,7 +7,7 @@
   { "timecounts/timecounts-frontend":
     { "crons": {}
     , "hooks":
-      { "issue_comment": ["flag"]
+      { "issue_comment": ["flag", "visual"]
       , "push": ["cowboys"]
       }
     }
