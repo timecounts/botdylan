@@ -206,21 +206,24 @@ function blinkCompare(baseCommit, headCommit, done) {
 
 }
 
-function build(task, cb) {
+function build(bot, task, cb) {
   baseS3Key = `visual-diff/${new Date().toISOString().replace(/[^a-z0-9.-]/g, "_")}`;
   var baseCommit = task[0];
   var headCommit = task[1];
   var callback = task[2];
   var done = function(err, details) {
+    bot.trace(`* [Visual] Task complete ${err ? `with error ${err.message}` : 'without errors'}`);
     cb();
     callback(err, details);
   }
   var cp = child_process.spawn(`${ROOT}/visdiff`, [baseCommit, headCommit]);
+  bot.trace('* [Visual] Spawned visdiff');
   var stdout = new Buffer(0);
   var stderr = new Buffer(0);
   cp.stdout.on('data', d => stdout = Buffer.concat([stdout, d]));
   cp.stderr.on('data', d => stderr = Buffer.concat([stderr, d]));
   cp.on('exit', function(code, signal) {
+    bot.trace(`* [Visual] visdiff exited with code ${code} (signal ${signal})`);
     var err = null;
     if (signal) {
       err = new Error(`Build terminated with signal ${signal}`);
@@ -238,7 +241,7 @@ function build(task, cb) {
 
 function runQueue(bot) {
   if (queue.length > 0) {
-    build(queue[0], function() {
+    build(bot, queue[0], function() {
       bot.trace('* [Visual] Task complete, running next task');
       queue.unshift();
       runQueue(bot);
