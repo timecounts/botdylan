@@ -256,8 +256,12 @@ function build(bot, task, cb) {
 
 function runQueue(bot) {
   if (queue.length > 0) {
-    build(bot, queue[0], function() {
-      bot.trace('* [Visual] Task complete, running next task');
+    var task = queue[0];
+    if (!task) {
+      throw new Error('INVALID TASK!');
+    }
+    build(bot, task, function() {
+      bot.trace(`* [Visual] Task complete, running next task (${queue.length - 1} remaining)`);
       queue.shift();
       runQueue(bot);
     });
@@ -270,7 +274,7 @@ function queueBuild(bot, baseCommit, headCommit, callback) {
     bot.trace('* [Visual] Running queue immediately');
     runQueue(bot);
   } else {
-    bot.trace('* [Visual] Task added to queue');
+    bot.trace(`* [Visual] Task added to queue (${queue.length - 1} in front)`);
    }
 }
 
