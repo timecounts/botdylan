@@ -258,7 +258,7 @@ function runQueue(bot) {
   if (queue.length > 0) {
     build(bot, queue[0], function() {
       bot.trace('* [Visual] Task complete, running next task');
-      queue.unshift();
+      queue.shift();
       runQueue(bot);
     });
   }
