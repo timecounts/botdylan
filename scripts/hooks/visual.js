@@ -3,6 +3,7 @@ var BlinkDiff = require('blink-diff');
 var fs = require('fs');
 var async = require('async');
 var s3 = require('s3');
+var child_process = require('child_process');
 
 var s3Client = s3.createClient({
   s3Options: {
