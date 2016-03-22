@@ -91,9 +91,9 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
       bot.trace('* [Visual] Set error on issue #' + payload.issue.number);
       send("Error occurred\n```\n" + err.stack + "\n```\n")
     } else if (!details.pass) {
-      createStatus(headCommit, 'failure', details.shortMessage);
-      bot.trace('* [Visual] Set failure on issue #' + payload.issue.number);
       send(details.fullMessage);
+      createStatus(headCommit, 'success', details.shortMessage);
+      bot.trace('* [Visual] Set success despite issues on issue #' + payload.issue.number);
     } else {
       createStatus(headCommit, 'success', details.shortMessage);
       bot.trace('* [Visual] Set success on issue #' + payload.issue.number);
