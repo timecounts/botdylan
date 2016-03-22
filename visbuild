@@ -6,6 +6,7 @@ LOGFILE="$2"
 
 SAFE_COMMIT=$(echo -n "$COMMIT" | tr -c '[a-zA-Z0-9]' '-')
 
+export BLINK=0 # Don't fail test if blink differs
 export BLINK_CAPTURE=1 # Capture screenshots
 export ALLOW_LOG_FAILS=1 # Capture screenshots
 
@@ -15,8 +16,7 @@ pkill -f 'rake jobs:work' || true
 git fetch >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>&1 || (echo "Git reset failed" && exit 2)
 git clean -df >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
-grep blink-diff test/test_helper.coffee || git checkout origin/master test/test_helper.coffee
-git checkout origin/master install-api.sh run-api.sh
+git checkout origin/master test/test_helper.coffee install-api.sh run-api.sh
 rm -Rf build >>"$LOGFILE" 2>&1 || (echo "Delete build folder failed" && exit 4)
 npm install >>"$LOGFILE" 2>&1 || (echo "npm install failed" && exit 5)
 ./install-api.sh >>"$LOGFILE" 2>&1 || (echo "install-api failed" && exit 6)
