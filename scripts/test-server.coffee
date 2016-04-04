@@ -116,6 +116,19 @@ module.exports = (robot) ->
         return done() if !isApi
         res.reply "The database has been migrated!\n#{storedOutput}"
         done()
+      copyData: (done) ->
+        return done() if !isApi
+        run "aws", [
+          "s3"
+          "sync"
+          "--acl", "public-read"
+          "s3://timecounts-staging-assets"
+          "s3://timecounts-test-assets"
+        ], options, storeOutput done
+      announceDataSuccess: (done) ->
+        return done() if !isApi
+        res.reply "The images have been copied!\n#{storedOutput}"
+        done()
     , (err) ->
       deploying = false
       if err
