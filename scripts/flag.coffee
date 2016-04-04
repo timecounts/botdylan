@@ -1,7 +1,7 @@
 # feature flags
 #
-# flags [app-name] - list the feature flags on heroku app
-# flag [app-name] with +flag1 -flag2 - enable flag1, disable flag2 on heroku app
+# hubot flags [app-name] - list the feature flags on heroku app
+# hubot flag [app-name] with +flag1 -flag2 - enable flag1, disable flag2 on heroku app
 
 Heroku = require('heroku-client')
 heroku = new Heroku({ token: process.env.HEROKU_API_KEY })

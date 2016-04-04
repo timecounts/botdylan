@@ -1,6 +1,6 @@
 # Test deploy
 #
-# deploy (test|test-api) [branch1] [branch2] - deploy code from master, branch1 and branch2 to timecounts-test/-api
+# hubot deploy (test|test-api) [branch1] [branch2] - deploy code from master, branch1 and branch2 to timecounts-test/-api
 
 _ = require('lodash')
 child_process = require 'child_process'
