@@ -11,7 +11,7 @@
     "async": "1.5.2",
     "heroku-client": "^2.4.1",
     "hubot": "^2.18.0",
-    "hubot-daily-update": "1.1.1",
+    "hubot-daily-update": "github:benjie/hubot-daily-update#patch-2",
     "hubot-diagnostics": "0.0.1",
     "hubot-google-images": "^0.2.6",
     "hubot-google-translate": "^0.2.0",
