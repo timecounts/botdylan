@@ -106,6 +106,19 @@ module.exports = (robot) ->
       announceDeploySuccess: (done) ->
         res.reply "The latest has been deployed!\n#{storedOutput}"
         done()
+      copyDatabase: (done) ->
+        return done() if !isApi
+        run "heroku", [
+          "pg:copy"
+          "timecounts-api-staging::DATABASE"
+          "DATABASE"
+          "--app", "timecounts-test-api"
+          "--confirm", "timecounts-test-api"
+        ], options, storeOutput done
+      announceCopyDatabaseSuccess: (done) ->
+        return done() if !isApi
+        res.reply "The database has been copied from staging!\n#{storedOutput}"
+        done()
       migrate: (done) ->
         return done() if !isApi
         run "heroku", ["run", "rake", "db:migrate"], options, storeOutput done
