@@ -135,8 +135,8 @@ module.exports = (robot) ->
           "s3"
           "sync"
           "--acl", "public-read"
-          "s3://timecounts-staging-assets"
-          "s3://timecounts-test-assets"
+          "s3://timecounts-staging-assets/uploads/"
+          "s3://timecounts-test-assets/uploads/"
         ], options, storeOutput done
       announceDataSuccess: (done) ->
         return done() if !isApi
