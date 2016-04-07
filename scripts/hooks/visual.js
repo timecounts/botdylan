@@ -95,6 +95,7 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
       createStatus(headCommit, 'success', details.shortMessage);
       bot.trace('* [Visual] Set success despite issues on issue #' + payload.issue.number);
     } else {
+      send(details.fullMessage);
       createStatus(headCommit, 'success', details.shortMessage);
       bot.trace('* [Visual] Set success on issue #' + payload.issue.number);
     }
