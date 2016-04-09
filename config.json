@@ -1,6 +1,6 @@
-{ "username": "ENVVAR"
-, "password": "ENVVAR"
-, "secret": "ENVVAR"
+{ "username": ""
+, "password": ""
+, "secret": ""
 , "url": "https://tcbd.eu.ngrok.io/"
 , "port": 5000
 , "repositories":
