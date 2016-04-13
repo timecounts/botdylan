@@ -9,6 +9,8 @@ SAFE_COMMIT=$(echo -n "$COMMIT" | tr -c '[a-zA-Z0-9]' '-')
 export BLINK=0 # Don't fail test if blink differs
 export BLINK_CAPTURE=1 # Capture screenshots
 export ALLOW_LOG_FAILS=1 # Capture screenshots
+export ENABLE_IMAGES=1
+export MAXIMIZE=1
 
 cd visual/timecounts-frontend
 pkill -f 'unicorn master' || true
