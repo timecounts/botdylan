@@ -48,6 +48,22 @@ module.exports = function pong(bot, repo_info, payload) {
   bot.github.pullRequests.get(prDetails, runVisual.bind(null, bot, repo_info, payload));
 }
 
+function output(details) {
+  if (!details || !details.stdout || !details.stderr) {
+    return "";
+  }
+  var stdout = details.stdout.toString('utf8');
+  var stderr = details.stderr.toString('utf8');
+  var text = "";
+  if (stdout.length) {
+    text += "### Stdout\n\n" + stdout + "\n\n";
+  }
+  if (stderr.length) {
+    text += "### Stderr\n\n" + stderr + "\n\n";
+  }
+  return text;
+}
+
 function runVisual(bot, repo_info, payload, err, pull_request) {
 
   function realSend(body) {
@@ -89,13 +105,13 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
     if (err) {
       createStatus(headCommit, 'error', err.message);
       bot.trace('* [Visual] Set error on issue #' + payload.issue.number);
-      send("Error occurred\n```\n" + err.stack + "\n```\n")
+      send("Error occurred\n```\n" + err.stack + "\n```\n" + output(details))
     } else if (!details.pass) {
-      send(details.fullMessage);
+      send(details.fullMessage + output(details));
       createStatus(headCommit, 'success', details.shortMessage);
       bot.trace('* [Visual] Set success despite issues on issue #' + payload.issue.number);
     } else {
-      send(details.fullMessage);
+      send(details.fullMessage + output(details));
       createStatus(headCommit, 'success', details.shortMessage);
       bot.trace('* [Visual] Set success on issue #' + payload.issue.number);
     }
@@ -237,16 +253,14 @@ function build(bot, task, cb) {
   }
   var cp = child_process.spawn(`${ROOT}/visdiff`, [baseCommit, headCommit]);
   bot.trace('* [Visual] Spawned visdiff');
-  var stdout = new Buffer(0);
-  var stderr = new Buffer(0);
   var details = {
-    stdout,
-    stderr,
+    stdout: new Buffer(0),
+    stderr: new Buffer(0),
     baseCommit,
     headCommit,
   };
-  cp.stdout.on('data', d => stdout = Buffer.concat([stdout, d]));
-  cp.stderr.on('data', d => stderr = Buffer.concat([stderr, d]));
+  cp.stdout.on('data', d => details.stdout = Buffer.concat([details.stdout, d]));
+  cp.stderr.on('data', d => details.stderr = Buffer.concat([details.stderr, d]));
   cp.on('exit', function(code, signal) {
     bot.trace(`* [Visual] visdiff exited with code ${code} (signal ${signal})`);
     var err = null;
