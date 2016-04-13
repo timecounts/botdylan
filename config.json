@@ -8,7 +8,6 @@
     { "crons": {}
     , "hooks":
       { "issue_comment": ["flag", "visual"]
-      , "push": ["cowboys"]
       }
     }
   , "timecounts/timecounts-api":
