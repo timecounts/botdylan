@@ -272,7 +272,7 @@ function build(bot, task, cb) {
       err = new Error(`Build exited with code ${code}`);
     }
     if (err) {
-      return done(err);
+      return done(err, details);
     }
     // Do the blink comparison
     blinkCompare(details, done);
