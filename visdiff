@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 cd "$(dirname $0)"
-BASE_COMMIT=$1
-HEAD_COMMIT=$2
+BRANCH_NAME="$1"
+BASE_COMMIT="$2"
+HEAD_COMMIT="$3"
+export CIRCLE_BRANCH="$BRANCH_NAME"
 LOGFILE="$(pwd)/logs/$(echo -n "${BASE_COMMIT}-${HEAD_COMMIT}" | tr -c "[a-zA-Z0-9]" "-").txt"
 echo "STARTING NEW BUILD: $(date)" >> $LOGFILE
 rm -Rf "archive/${BASE_COMMIT}"

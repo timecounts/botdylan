@@ -90,6 +90,7 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
     return send("Could not load pull request info: \n```\n" + err.message + "\n```")
   }
 
+  var branchName = pull_request.head.ref;
   var baseCommit = pull_request.base.sha;
   var headCommit = pull_request.head.sha;
 
@@ -101,7 +102,7 @@ function runVisual(bot, repo_info, payload, err, pull_request) {
   // 2. Run build (queue?)
   // 3. Update status
 
-  queueBuild(bot, baseCommit, headCommit, function(err, details) {
+  queueBuild(bot, branchName, baseCommit, headCommit, function(err, details) {
     if (err) {
       createStatus(headCommit, 'error', err.message);
       bot.trace('* [Visual] Set error on issue #' + payload.issue.number);
@@ -243,15 +244,16 @@ function blinkCompare(details, done) {
 
 function build(bot, task, cb) {
   baseS3Key = `visual-diff/${new Date().toISOString().replace(/[^a-z0-9.-]/g, "_")}`;
-  var baseCommit = task[0];
-  var headCommit = task[1];
-  var callback = task[2];
+  var branchName = task[0];
+  var baseCommit = task[1];
+  var headCommit = task[2];
+  var callback = task[3];
   var done = function(err, details) {
     bot.trace(`* [Visual] Task complete ${err ? `with error ${err.message}` : 'without errors'}`);
     cb();
     callback(err, details);
   }
-  var cp = child_process.spawn(`${ROOT}/visdiff`, [baseCommit, headCommit]);
+  var cp = child_process.spawn(`${ROOT}/visdiff`, [branchName, baseCommit, headCommit]);
   bot.trace('* [Visual] Spawned visdiff');
   var details = {
     stdout: new Buffer(0),
@@ -292,8 +294,8 @@ function runQueue(bot) {
   }
 }
 
-function queueBuild(bot, baseCommit, headCommit, callback) {
-  queue.push([baseCommit, headCommit, callback]);
+function queueBuild(bot, branchName, baseCommit, headCommit, callback) {
+  queue.push([branchName, baseCommit, headCommit, callback]);
   if (queue.length === 1) {
     bot.trace('* [Visual] Running queue immediately');
     runQueue(bot);
