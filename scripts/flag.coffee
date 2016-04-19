@@ -45,7 +45,7 @@ module.exports = (robot) ->
       return res.reply body
     return
 
-  robot.respond /flag ([a-z0-9-]+) +(?:with +)?((?:[+-]?[a-zA-Z0-9_-]+ *)+)/i, (res) ->
+  robot.respond /flag ([a-z0-9-]+) +(?:with +)?((?:[!+-]?[a-zA-Z0-9_-]+ *)+)/i, (res) ->
     appName = resolveAppAlias res.match[1]
     if !allowed(appName, res.message.user.name)
       return res.reply "I'm sorry Dave, I'm afraid I can't do that"
@@ -53,16 +53,23 @@ module.exports = (robot) ->
 
     parseFlagStr = (memo, str) ->
       add = true
+      unset = false
       if str.charAt(0) == '+'
         str = str.substr(1)
       else if str.charAt(0) == '-'
         add = false
         str = str.substr(1)
+      else if str.charAt(0) == '!'
+        add = false
+        unset = true
+        str = str.substr(1)
+      if str.indexOf("FLAG_") == 0 && str.length > 5
+        str = str.substr(5)
       if /[a-z]/.test(str)
         str = str.replace(/([A-Z])/g, '_$1').toUpperCase()
       str = str.replace(/-/g, '_')
       str = str.replace(/__+/g, '_')
-      memo['FLAG_' + str] = if add then '1' else '0'
+      memo['FLAG_' + str] = if unset then null else if add then '1' else '0'
       memo
 
     if flagString and flagString.length
