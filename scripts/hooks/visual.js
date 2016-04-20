@@ -56,10 +56,10 @@ function output(details) {
   var stderr = details.stderr.toString('utf8');
   var text = "";
   if (stdout.length) {
-    text += "### Stdout\n\n" + stdout + "\n\n";
+    text += "\n\n### Stdout\n\n" + stdout + "\n\n";
   }
   if (stderr.length) {
-    text += "### Stderr\n\n" + stderr + "\n\n";
+    text += "\n\n### Stderr\n\n" + stderr + "\n\n";
   }
   return text;
 }

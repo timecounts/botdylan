@@ -11,6 +11,7 @@ export BLINK_CAPTURE=1 # Capture screenshots
 export ALLOW_LOG_FAILS=1 # Capture screenshots
 export ENABLE_IMAGES=1
 export MAXIMIZE=1
+export BYPASS_STRIPE=1
 
 cd visual/timecounts-frontend
 pkill -f 'unicorn master' || true
@@ -28,7 +29,7 @@ mkdir -p screenshots >>"$LOGFILE" 2>&1
 if [ "$TEST_STATUS" != "0" ]; then
   echo "Test failed for $COMMIT";
   echo '```'
-  tail -n 30 $LOGFILE
+  tail -n 100 $LOGFILE
   echo '```'
   #exit $TEST_STATUS
 fi
