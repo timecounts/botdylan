@@ -52,8 +52,8 @@ function output(details) {
   if (!details || !details.stdout || !details.stderr) {
     return "";
   }
-  var stdout = details.stdout.toString('utf8');
-  var stderr = details.stderr.toString('utf8');
+  var stdout = details.stdout.toString('utf8').replace(/[^\x00-\x7F]/g, "");
+  var stderr = details.stderr.toString('utf8').replace(/[^\x00-\x7F]/g, "");
   var text = "";
   if (stdout.length) {
     text += "\n\n### Stdout\n\n" + stdout + "\n\n";
