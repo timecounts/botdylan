@@ -16,7 +16,7 @@ export BYPASS_STRIPE=1
 cd visual/timecounts-frontend
 pkill -f 'unicorn master' || true
 pkill -f 'rake jobs:work' || true
-git fetch >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
+git fetch -p >>"$LOGFILE" 2>&1 || (echo "Git fetch failed" && exit 1)
 git reset --hard "$COMMIT" >>"$LOGFILE" 2>&1 || (echo "Git reset failed" && exit 2)
 git clean -df >>"$LOGFILE" 2>&1 || (echo "Git clean failed" && exit 3)
 git checkout origin/master test/test_helper.coffee install-api.sh run-api.sh test.sh src/server/connect-fs.coffee src/server/middleware/session.coffee
