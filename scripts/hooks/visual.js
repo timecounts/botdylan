@@ -176,7 +176,7 @@ function blinkDiff(details, fileName, done) {
           body:
             `#### ${title}\n\n` +
             `Differences: ${result.differences}\n`+
-            `![](${url})`
+            `[![](${url})](${url})`
         });
         return done();
       })
