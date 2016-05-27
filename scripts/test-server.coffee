@@ -59,8 +59,9 @@ module.exports = (robot) ->
     force = !!res.match[2]
     branches = _.compact((res.match[3] || "master").split(/[ ]+/))
     isApi = /[-]api/.test(appName)
+    isTestApi = appName is "timecounts-test-api"
 
-    if force and isApi
+    if force and isApi and !isTestApi
       return res.reply "I'm sorry Dave, I'm afraid I can't do that"
 
     if deploying
