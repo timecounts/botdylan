@@ -23,7 +23,7 @@
     "hubot-rules": "^0.1.1",
     "hubot-scripts": "^2.16.2",
     "hubot-shipit": "^0.2.0",
-    "hubot-slack": "slackhq/hubot-slack#v3-sdk-updates",
+    "hubot-slack": "github:slackhq/hubot-slack",
     "lodash": "^4.6.1",
     "twit": "2.2.3"
   },
