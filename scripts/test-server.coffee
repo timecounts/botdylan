@@ -86,7 +86,7 @@ module.exports = (robot) ->
 
     async.series
       goTest: (done) -> run "git", ["checkout", "-f", "botbranch"], options, done
-      gitFetch: (done) -> run "git", ["fetch", "--all"], options, done
+      gitFetch: (done) -> run "git", ["fetch", "--all", "-p"], options, done
       gitReset: (done) ->
         if force
           run "git", ["reset", "--hard", "origin/#{branches.shift()}"], options, done
