@@ -54,12 +54,13 @@ module.exports = (robot) ->
 
   deploying = false
 
-  robot.respond /deploy (test(?:-api)?)( -f| --force)?((?: [a-z][ a-z0-9_-]+)*)/i, (res) ->
+  robot.respond /deploy (test(?:-api)?|beta)( -f| --force)?((?: [a-z][ a-z0-9_-]+)*)/i, (res) ->
     appName = "timecounts-#{res.match[1]}"
     force = !!res.match[2]
     branches = _.compact((res.match[3] || "master").split(/[ ]+/))
     isApi = /[-]api/.test(appName)
     isTestApi = appName is "timecounts-test-api"
+    gitRemote = appName
 
     if force and isApi and !isTestApi
       return res.reply "I'm sorry Dave, I'm afraid I can't do that"
@@ -84,13 +85,13 @@ module.exports = (robot) ->
 
 
     async.series
-      goTest: (done) -> run "git", ["checkout", "-f", "test"], options, done
+      goTest: (done) -> run "git", ["checkout", "-f", "botbranch"], options, done
       gitFetch: (done) -> run "git", ["fetch", "--all"], options, done
       gitReset: (done) ->
         if force
           run "git", ["reset", "--hard", "origin/#{branches.shift()}"], options, done
         else
-          run "git", ["reset", "--hard", "test/master"], options, done
+          run "git", ["reset", "--hard", "#{gitRemote}/master"], options, done
       mergeBranches: (done) ->
         if branches.length is 0
           return done()
@@ -101,9 +102,11 @@ module.exports = (robot) ->
         done()
       pushToHeroku: (done) ->
         if force
-          run "git", ["push", "--force", "test", "test:master"], options, storeOutput done
+          run "git", [
+            "push", "--force", "#{gitRemote}", "botbranch:master"
+          ], options, storeOutput done
         else
-          run "git", ["push", "test", "test:master"], options, storeOutput done
+          run "git", ["push", "#{gitRemote}", "botbranch:master"], options, storeOutput done
       announceDeploySuccess: (done) ->
         res.reply "The latest has been deployed!\n#{storedOutput}"
         done()
