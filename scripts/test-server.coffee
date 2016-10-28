@@ -128,7 +128,7 @@ module.exports = (robot) ->
         run "heroku", ["run", "rake", "db:migrate"], options, storeOutput done
       restart: (done) ->
         return done() if !isApi
-        run "heroku", ["run", "ps:restart"], options, done
+        run "heroku", ["ps:restart"], options, done
       announceMigrateSuccess: (done) ->
         return done() if !isApi
         res.reply "The database has been migrated!\n#{storedOutput}"
