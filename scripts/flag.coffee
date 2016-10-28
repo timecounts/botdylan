@@ -14,6 +14,7 @@ module.exports = (robot) ->
       "staging": "timecounts-frontend-staging"
       "production": "timecounts-frontend"
       "test": "timecounts-test"
+      "beta": "timecounts-beta"
     }[alias]
     return full if full
     matches = alias.match(/^(?:#|pr-?)([0-9]+)$/)
@@ -22,7 +23,7 @@ module.exports = (robot) ->
     return alias
 
   allowed = (appName, user) ->
-    basicAllowed = /^(timecounts-fe-pr-|timecounts-frontend-staging$|timecounts-test$)/.test(appName)
+    basicAllowed = /^(timecounts-fe-pr-|timecounts-frontend-staging$|timecounts-test$|timecounts-beta$)/.test(appName)
     return true if basicAllowed
     productionAllowed = /^timecounts-frontend$/.test(appName)
     return true if productionAllowed and user is 'benjie'
