@@ -80,7 +80,15 @@ module.exports = (robot) ->
       status: update
     , (err, reply) ->
       if err
-        data = JSON.parse(err.data).errors[0]
+        try
+          data = JSON.parse(err.data).errors[0]
+        catch e
+          console.dir err
+          console.dir e
+          data = {
+            message: err.message || "Unknown"
+            code: "unknown"
+          }
         msg.reply "I can't do that. #{data.message} (error #{data.code})"
         return
       if reply['text']
