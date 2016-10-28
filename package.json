@@ -25,6 +25,7 @@
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "github:slackhq/hubot-slack",
     "lodash": "^4.6.1",
+    "node-emoji": "1.4.1",
     "twit": "2.2.3"
   },
   "engines": {

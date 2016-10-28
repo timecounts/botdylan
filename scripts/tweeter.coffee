@@ -37,6 +37,7 @@
 #   https://github.com/jhubert/hubot-tweeter
 
 Twit = require "twit"
+emoji = require 'node-emoji'
 config =
   consumer_key: process.env.HUBOT_TWITTER_CONSUMER_KEY
   consumer_secret: process.env.HUBOT_TWITTER_CONSUMER_SECRET
@@ -59,7 +60,7 @@ module.exports = (robot) ->
   robot.respond /tweet\@([^\s]+)\s(.+)$/i, (msg) ->
 
     username = msg.match[1].toLowerCase()
-    update   = msg.match[2].trim()
+    update   = emoji.emojify(msg.match[2].trim())
 
     unless config.accounts[username]
       msg.reply "I'm not setup to send tweets on behalf of #{msg.match[1]}. Sorry."
